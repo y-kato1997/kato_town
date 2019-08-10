@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>kato.click</title>
+<meta name="description" content="加藤のためのサイト">
+<meta property="og:title" content="kato.click">
+<meta property="og:type" content="website" />
+<meta property="og:url"  content="https://kato.click">
+<meta property="og:site_name" content="kato.click">
+<meta property="og:description" content="加藤のためのサイト">
+<meta property="og:image" content="https://kato.click/img/kato_thumbnail.png">
+<meta property="fb:app_id" content="3027674887272797">
+<link rel="apple-touch-icon" type="image/png" href="./img/apple-touch-icon-180x180.png">
+<link rel="icon" type="image/png" href="./img/icon-192x192.png">
+<style>
+* {
+    margin: 0px;
+    padding: 0px;
+}
+</style>
+</head>
+<body>
+<script src="./js/p5.js"></script>
+<script src="./js/p5.dom.js"></script>
+<script src="./js/p5.sound.js"></script>
+<script>
+//生成される文字の数
+var TextItems = Math.floor( Math.random() * (20+ 1 - 10) ) + 10;
+//生成される文字の大きさ
+var max_TextSize = 50;
+var count_kato = 0;
+kato_info = [];
+
+function setup() {
+    createCanvas(windowWidth, windowHeight);
+    for(var i = 0; i < TextItems; i++) {
+        kato_info.push([
+                //X座標とY座標
+                [ round(random(width)), round(random(height)) ],
+                //テキストの大きさ
+                round(random(1, max_TextSize)),
+                //不透明度
+                round(random(100, 255)),
+                //テキストの色
+                [0, 0, 0],
+                //タッチかどうか
+                false
+        ]);
+        count_kato ++;
+    }
+}
+
+function draw() {
+    textAlign(CENTER);
+    background(255,255,255);
+    for(var i = 0; i < kato_info.length-1; i++){
+        fill (kato_info[i][3][0], kato_info[i][3][1], kato_info[i][3][2], kato_info[i][2]);
+        textSize(kato_info[i][1]);
+        text("加\n藤" , kato_info[i][0][0], kato_info[i][0][1]);
+        kato_info[i][1] ++;
+        kato_info[i][2] -= 2;
+        if(kato_info[i][2] < 0){
+            if(kato_info[i][4] == true){
+                kato_info.splice(i, 1);
+            } else {
+                kato_info[i][0] = [ round(random(width)), round(random(height)) ];
+                kato_info[i][1] = round(random(1, max_TextSize));
+                kato_info[i][2] = round(random(255));
+                kato_info[i][3] = [0, 0, 0];
+                count_kato ++;
+            }
+        }
+    }
+    if(mouseIsPressed){
+        if(frameCount%2 == 0) {
+            kato_info.push([[mouseX, mouseY], max_TextSize, 255,  [255 , 0, 153], true]);
+            count_kato ++;
+        }
+    }
+    textAlign(RIGHT);
+    fill (0,0,0,255);
+    textSize(20);
+    text("加藤 = " +  count_kato + " 人", width-40, height-40);
+}
+
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+}
+
+</script>
+</body>
+</html>
