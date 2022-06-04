@@ -1,1 +1,1 @@
-# kato.click
+# kato.town

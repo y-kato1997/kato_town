@@ -1,93 +1,136 @@
 <!doctype html>
 <html>
+
 <head>
-<meta charset="UTF-8">
-<title>kato.click</title>
-<meta name="description" content="加藤のためのサイト">
-<meta property="og:title" content="kato.click">
-<meta property="og:type" content="website" />
-<meta property="og:url"  content="https://kato.click">
-<meta property="og:site_name" content="kato.click">
-<meta property="og:description" content="加藤のためのサイト">
-<meta property="og:image" content="https://kato.click/img/kato_thumbnail.png">
-<meta property="fb:app_id" content="3027674887272797">
-<link rel="apple-touch-icon" type="image/png" href="./img/apple-touch-icon-180x180.png">
-<link rel="icon" type="image/png" href="./img/icon-192x192.png">
-<style>
-* {
-    margin: 0px;
-    padding: 0px;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>kato.town</title>
+  <meta name="description" content="加藤のためのサイト">
+  <meta property="og:title" content="kato.click">
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://kato.click">
+  <meta property="og:site_name" content="kato.click">
+  <meta property="og:description" content="加藤のためのサイト">
+  <meta property="og:image" content="https://kato.click/img/kato_thumbnail.png">
+  <meta property="fb:app_id" content="3027674887272797">
+  <link rel="apple-touch-icon" type="image/png" href="./img/apple-touch-icon-180x180.png">
+  <link rel="icon" type="image/png" href="./img/icon-192x192.png">
+  <style>
+    * {
+      margin: 0px;
+      padding: 0px;
+    }
+  </style>
 </head>
+
 <body>
-<script src="./js/p5.js"></script>
-<script src="./js/p5.dom.js"></script>
-<script src="./js/p5.sound.js"></script>
-<script>
-//生成される文字の数
-var TextItems = Math.floor( Math.random() * (20+ 1 - 10) ) + 10;
-//生成される文字の大きさ
-var max_TextSize = 50;
-var count_kato = 0;
-kato_info = [];
+  <script src="./js/p5.js"></script>
+  <script src="./js/p5.dom.js"></script>
+  <script src="./js/p5.sound.js"></script>
+  <script>
+    let myFont;
+    var countKato = 0;
+    var katoItems = [];
+    var maxTextSize = 0;
+    var soundMute = true;
 
-function setup() {
-    createCanvas(windowWidth, windowHeight);
-    for(var i = 0; i < TextItems; i++) {
-        kato_info.push([
-                //X座標とY座標
-                [ round(random(width)), round(random(height)) ],
-                //テキストの大きさ
-                round(random(1, max_TextSize)),
-                //不透明度
-                round(random(100, 255)),
-                //テキストの色
-                [0, 0, 0],
-                //タッチかどうか
-                false
-        ]);
-        count_kato ++;
+    function preload() {
+      myFont = loadFont('./asset/NotoSerifJP-Medium.otf');
     }
-}
 
-function draw() {
-    textAlign(CENTER);
-    background(255,255,255);
-    for(var i = 0; i < kato_info.length-1; i++){
-        fill (kato_info[i][3][0], kato_info[i][3][1], kato_info[i][3][2], kato_info[i][2]);
-        textSize(kato_info[i][1]);
-        text("加\n藤" , kato_info[i][0][0], kato_info[i][0][1]);
-        kato_info[i][1] ++;
-        kato_info[i][2] -= 2;
-        if(kato_info[i][2] < 0){
-            if(kato_info[i][4] == true){
-                kato_info.splice(i, 1);
-            } else {
-                kato_info[i][0] = [ round(random(width)), round(random(height)) ];
-                kato_info[i][1] = round(random(1, max_TextSize));
-                kato_info[i][2] = round(random(255));
-                kato_info[i][3] = [0, 0, 0];
-                count_kato ++;
-            }
+    function setup() {
+      createCanvas(windowWidth, windowHeight, WEBGL);
+      angleMode(DEGREES);
+      setTextSize();
+
+      //生成される文字の数(5~10個)
+      var maxTextQty = Math.floor(Math.random() * 5) + 5;
+
+      for (var i = 0; i < maxTextQty; i++) {
+        katoItems.push(katoGenerator());
+        countKato++;
+      }
+    }
+
+    function draw() {
+      background(17, 17, 17);
+      textFont(myFont);
+
+      for (let i = 0; i < katoItems.length; i++) {
+        katoItems[i]['textSize'] += 0.5;
+        katoItems[i]['textRotate'] += 0.02;
+        katoItems[i]['textOpacity'] -= 1.5;
+
+        textAlign(CENTER);
+        rectMode(CENTER);
+
+        push();
+
+        fill(
+          katoItems[i]['textColorR'],
+          katoItems[i]['textColorG'],
+          katoItems[i]['textColorB'],
+          katoItems[i]['textOpacity']
+        );
+
+        translate(
+          katoItems[i]['textPositionX'],
+          katoItems[i]['textPositionY'],
+          katoItems[i]['textPositionZ']
+        );
+
+        textSize(
+          katoItems[i]['textSize']
+        );
+
+        rotateZ(
+          katoItems[i]['textRotate']
+        );
+
+        text('加\n藤', 0, 0);
+
+        pop();
+
+        if (katoItems[i]['textOpacity'] < 0) {
+          let katoParam = katoGenerator();
+          katoItems[i]['textPositionX'] = katoParam['textPositionX'];
+          katoItems[i]['textPositionY'] = katoParam['textPositionY'];
+          katoItems[i]['textPositionZ'] = 0;
+          katoItems[i]['textSize'] = katoParam['textSize'];
+          katoItems[i]['textOpacity'] = katoParam['textOpacity'];
+          katoItems[i]['textRotate'] = katoParam['textRotate'];
         }
+      }
     }
-    if(mouseIsPressed){
-        if(frameCount%2 == 0) {
-            kato_info.push([[mouseX, mouseY], max_TextSize, 255,  [255 , 0, 153], true]);
-            count_kato ++;
-        }
+
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+      setTextSize();
     }
-    textAlign(RIGHT);
-    fill (0,0,0,255);
-    textSize(20);
-    text("加藤 = " +  count_kato + " 人", width-40, height-40);
-}
 
-function windowResized() {
-    resizeCanvas(windowWidth, windowHeight);
-}
+    function setTextSize() {
+      let textSizeParam = 6;
+      if (height > width) {
+        maxTextSize = height / textSizeParam;
+      } else {
+        maxTextSize = width / textSizeParam;
+      }
+    }
 
-</script>
+    function katoGenerator() {
+      return {
+        'textPositionX': round(random(-width / 2, width / 2)),
+        'textPositionY': round(random(-height / 2, height / 2)),
+        'textPositionZ': 0,
+        'textSize': round(random(1, maxTextSize)),
+        'textColorR': 255,
+        'textColorG': 255,
+        'textColorB': 255,
+        'textOpacity': round(random(50, 255)),
+        'textRotate': round(random(-140, 140)),
+        'isTouch': false
+      }
+    }
+  </script>
 </body>
+
 </html>
