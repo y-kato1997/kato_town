@@ -97,8 +97,16 @@
 
         pop();
 
+        if (element.drawTemporary && element.opacity < 0) {
+          katoElements = katoElements.filter(e => e !== element);
+        }
+
         if (element.opacity < 0) {
-          Object.assign(element, createKatoElement());
+          if (element.drawTemporary) {
+            katoElements = katoElements.filter(e => e !== element);
+          } else {
+            Object.assign(element, createKatoElement());
+          }
         }
       }
     }
@@ -113,7 +121,7 @@
       maxImageSize = height > width ? height / sizeFactor : width / sizeFactor;
     }
 
-    function createKatoElement() {
+    function createKatoElement(drawTemporary = false) {
       let posX = 0;
       let posY = 0;
 
@@ -122,7 +130,7 @@
           [posX, posY] = calculatePositionWithGravity(mouseX, mouseY);
           break;
         case isTouchActive:
-          let fingerNum = round(random(0, touches.length-1));
+          let fingerNum = round(random(0, touches.length - 1));
           [posX, posY] = calculatePositionWithGravity(touches[fingerNum].x, touches[fingerNum].y);
           break;
         default:
@@ -138,7 +146,8 @@
         size: round(random(1, maxImageSize)),
         opacity: round(random(50, 255)),
         rotation: round(random(-140, 140)),
-        count: 0
+        count: 0,
+        drawTemporary: drawTemporary
       };
     }
 
@@ -154,6 +163,29 @@
         (x - width / 2) + (distanceX * factor * directionX),
         (y - height / 2) + (distanceY * factor * directionY)
       ];
+    }
+
+    let lastMovedFrame = 0;
+    let frameInterval = 10;
+    function mouseMoved() {
+      if (frameCount - lastMovedFrame > frameInterval) {
+        katoElements.push(createKatoElement(true));
+        lastMovedFrame = frameCount;
+      }
+    }
+
+    function mousePressed() {
+      if (frameCount - lastMovedFrame > frameInterval) {
+        katoElements.push(createKatoElement(true));
+        lastMovedFrame = frameCount;
+      }
+    }
+
+    function touchMoved() {
+      if (frameCount - lastMovedFrame > frameInterval) {
+        katoElements.push(createKatoElement(true));
+        lastMovedFrame = frameCount;
+      }
     }
 
     function touchStarted() {
