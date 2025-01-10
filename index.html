@@ -5,12 +5,12 @@
   <meta charset="UTF-8">
   <title>kato.town</title>
   <meta name="description" content="加藤のためのサイト">
-  <meta property="og:title" content="kato.click">
+  <meta property="og:title" content="kato.town">
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://kato.click">
+  <meta property="og:url" content="kato.town">
   <meta property="og:site_name" content="kato.click">
   <meta property="og:description" content="加藤のためのサイト">
-  <meta property="og:image" content="https://kato.click/img/kato_thumbnail.png">
+  <meta property="og:image" content="./img/kato_thumbnail.png">
   <meta property="fb:app_id" content="3027674887272797">
   <link rel="apple-touch-icon" type="image/png" href="./img/apple-touch-icon-180x180.png">
   <link rel="icon" type="image/png" href="./img/icon-192x192.png">
@@ -18,117 +18,140 @@
     * {
       margin: 0px;
       padding: 0px;
+      -ms-user-select: none;
+      -moz-user-select: -moz-none;
+      -khtml-user-select: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
   </style>
 </head>
 
 <body>
   <script src="./js/p5.js"></script>
-  <script src="./js/p5.dom.js"></script>
-  <script src="./js/p5.sound.js"></script>
   <script>
-    let myFont;
-    var countKato = 0;
-    var katoItems = [];
-    var maxTextSize = 0;
-    var soundMute = true;
+    let katoImage;
+    let katoCount = 0;
+    let katoElements = [];
+    let maxImageSize = 0;
+
+    let isMouseHovering = false;
+    let isTouchActive = false;
+
+    document.body.addEventListener("mouseenter", () => {
+      isMouseHovering = true;
+    }, false);
+
+    document.body.addEventListener("mouseleave", () => {
+      isMouseHovering = false;
+    }, false);
+
+    document.body.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    document.body.addEventListener("touchmove", (e) => {
+      e.preventDefault();
+    }, { passive: false });
 
     function preload() {
-      myFont = loadFont('./asset/NotoSerifJP-Medium.otf');
+      katoImage = loadImage('./asset/kato.svg');
     }
 
     function setup() {
       createCanvas(windowWidth, windowHeight, WEBGL);
       angleMode(DEGREES);
-      setTextSize();
+      updateMaxImageSize();
 
       //生成される文字の数(5~10個)
-      var maxTextQty = Math.floor(Math.random() * 5) + 5;
+      const maxElements = Math.floor(Math.random() * 5) + 5;
 
-      for (var i = 0; i < maxTextQty; i++) {
-        katoItems.push(katoGenerator());
-        countKato++;
+      for (let i = 0; i < maxElements; i++) {
+        katoElements.push(createKatoElement());
+        katoCount++;
       }
     }
 
     function draw() {
       background(17, 17, 17);
-      textFont(myFont);
 
-      for (let i = 0; i < katoItems.length; i++) {
-        katoItems[i]['textSize'] += 0.5;
-        katoItems[i]['textRotate'] += 0.02;
-        katoItems[i]['textOpacity'] -= 1.5;
+      for (const element of katoElements) {
+        element.size += 0.5;
+        element.rotation += 0.02;
+        element.opacity -= 1.5;
 
-        textAlign(CENTER);
-        rectMode(CENTER);
-
+        imageMode(CENTER);
         push();
 
-        fill(
-          katoItems[i]['textColorR'],
-          katoItems[i]['textColorG'],
-          katoItems[i]['textColorB'],
-          katoItems[i]['textOpacity']
-        );
+        translate(element.x, element.y, element.z);
+        rotateZ(element.rotation);
+        tint(255, element.opacity);
 
-        translate(
-          katoItems[i]['textPositionX'],
-          katoItems[i]['textPositionY'],
-          katoItems[i]['textPositionZ']
-        );
-
-        textSize(
-          katoItems[i]['textSize']
-        );
-
-        rotateZ(
-          katoItems[i]['textRotate']
-        );
-
-        text('加\n藤', 0, 0);
+        const imageWidth = element.size;
+        const imageHeight = element.size * (katoImage.height / katoImage.width);
+        image(katoImage, 0, 0, imageWidth, imageHeight);
 
         pop();
 
-        if (katoItems[i]['textOpacity'] < 0) {
-          let katoParam = katoGenerator();
-          katoItems[i]['textPositionX'] = katoParam['textPositionX'];
-          katoItems[i]['textPositionY'] = katoParam['textPositionY'];
-          katoItems[i]['textPositionZ'] = 0;
-          katoItems[i]['textSize'] = katoParam['textSize'];
-          katoItems[i]['textOpacity'] = katoParam['textOpacity'];
-          katoItems[i]['textRotate'] = katoParam['textRotate'];
+        if (element.opacity < 0) {
+          Object.assign(element, createKatoElement());
         }
       }
     }
 
     function windowResized() {
       resizeCanvas(windowWidth, windowHeight);
-      setTextSize();
+      updateMaxImageSize();
     }
 
-    function setTextSize() {
-      let textSizeParam = 6;
-      if (height > width) {
-        maxTextSize = height / textSizeParam;
+    function updateMaxImageSize() {
+      const sizeFactor = 6;
+      maxImageSize = height > width ? height / sizeFactor : width / sizeFactor;
+    }
+
+    function createKatoElement() {
+      let posX = 0;
+      let posY = 0;
+
+      if (isMouseHovering) {
+        [posX, posY] = calculatePositionWithGravity(mouseX, mouseY);
+      } else if (isTouchActive) {
+        [posX, posY] = calculatePositionWithGravity(touches[0].x, touches[0].y);
       } else {
-        maxTextSize = width / textSizeParam;
+        posX = round(random(-width / 2, width / 2));
+        posY = round(random(-height / 2, height / 2));
       }
+
+      return {
+        x: posX,
+        y: posY,
+        z: 0,
+        size: round(random(1, maxImageSize)),
+        opacity: round(random(50, 255)),
+        rotation: round(random(-140, 140)),
+      };
     }
 
-    function katoGenerator() {
-      return {
-        'textPositionX': round(random(-width / 2, width / 2)),
-        'textPositionY': round(random(-height / 2, height / 2)),
-        'textPositionZ': 0,
-        'textSize': round(random(1, maxTextSize)),
-        'textColorR': 255,
-        'textColorG': 255,
-        'textColorB': 255,
-        'textOpacity': round(random(50, 255)),
-        'textRotate': round(random(-140, 140)),
-        'isTouch': false
-      }
+    function calculatePositionWithGravity(x, y) {
+      const factor = (random() ** 2) * 0.5;
+      const directionX = random() < 0.5 ? -1 : 1;
+      const directionY = random() < 0.5 ? -1 : 1;
+
+      const distanceX = directionX === 1 ? width - x : x;
+      const distanceY = directionY === 1 ? height - y : y;
+
+      return [
+        (x - width / 2) + (distanceX * factor * directionX),
+        (y - height / 2) + (distanceY * factor * directionY)
+      ];
+    }
+
+    function touchStarted() {
+      isTouchActive = true;
+    }
+
+    function touchEnded() {
+      isTouchActive = false;
     }
   </script>
 </body>
