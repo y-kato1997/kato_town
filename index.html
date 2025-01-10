@@ -68,7 +68,6 @@
 
       for (let i = 0; i < maxElements; i++) {
         katoElements.push(createKatoElement());
-        katoCount++;
       }
     }
 
@@ -76,9 +75,14 @@
       background(17, 17, 17);
 
       for (const element of katoElements) {
+        if (element.count === 0) {
+          katoCount++;
+        }
+
         element.size += 0.5;
         element.rotation += 0.02;
         element.opacity -= 1.5;
+        element.count++;
 
         imageMode(CENTER);
         push();
@@ -113,13 +117,18 @@
       let posX = 0;
       let posY = 0;
 
-      if (isMouseHovering) {
-        [posX, posY] = calculatePositionWithGravity(mouseX, mouseY);
-      } else if (isTouchActive) {
-        [posX, posY] = calculatePositionWithGravity(touches[0].x, touches[0].y);
-      } else {
-        posX = round(random(-width / 2, width / 2));
-        posY = round(random(-height / 2, height / 2));
+      switch (true) {
+        case isMouseHovering:
+          [posX, posY] = calculatePositionWithGravity(mouseX, mouseY);
+          break;
+        case isTouchActive:
+          let fingerNum = round(random(0, touches.length-1));
+          [posX, posY] = calculatePositionWithGravity(touches[fingerNum].x, touches[fingerNum].y);
+          break;
+        default:
+          posX = round(random(-width / 2, width / 2));
+          posY = round(random(-height / 2, height / 2));
+          break;
       }
 
       return {
@@ -129,6 +138,7 @@
         size: round(random(1, maxImageSize)),
         opacity: round(random(50, 255)),
         rotation: round(random(-140, 140)),
+        count: 0
       };
     }
 
