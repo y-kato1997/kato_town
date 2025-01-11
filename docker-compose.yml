@@ -1,0 +1,15 @@
+version: "3.1"
+
+services:
+  apache:
+    image: httpd
+    container_name: kato_town
+    restart: always
+    ports:
+      - 80:80
+    environment:
+      - TZ=Asia/Tokyo
+    volumes:
+      - ./htdocs:/usr/local/apache2/htdocs
+      - ./conf:/usr/local/apache2/conf
+      - ./logs/:/usr/local/apache2/logs
