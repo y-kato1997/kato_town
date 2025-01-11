@@ -67,9 +67,9 @@
       angleMode(DEGREES);
       updateMaxImageSize();
 
-      //生成される文字の数(10~15個)
-      const minElements = 10;
-      const maxElements = 15;
+      //生成される文字の数(15~20個)
+      const minElements = 15;
+      const maxElements = 20;
       const elementCount = Math.floor(Math.random() * (maxElements - minElements + 1)) + minElements;
 
       for (let i = 0; i < maxElements; i++) {
@@ -128,7 +128,7 @@
     }
 
     function updateMaxImageSize() {
-      const sizeFactor = 15;
+      const sizeFactor = 10;
       maxImageSize = height > width ? height / sizeFactor : width / sizeFactor;
     }
 
@@ -176,7 +176,7 @@
     }
 
     let lastMovedFrame = 0;
-    let frameInterval = 5;
+    let frameInterval = 2;
     function mouseMoved() {
       if (frameCount - lastMovedFrame > frameInterval) {
         katoElements.push(createKatoElement(true));
