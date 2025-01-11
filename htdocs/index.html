@@ -23,6 +23,7 @@
       -khtml-user-select: none;
       -webkit-user-select: none;
       user-select: none;
+      overflow: hidden;
     }
   </style>
 </head>
@@ -204,6 +205,10 @@
 
     function touchEnded() {
       isTouchActive = false;
+    }
+
+    function mouseWheel(event) {
+      katoElements.push(createKatoElement(true));
     }
   </script>
 </body>
