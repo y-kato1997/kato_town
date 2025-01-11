@@ -164,17 +164,15 @@
     }
 
     function calculatePositionWithGravity(x, y) {
-      const factor = (random() ** 2) * 0.5;
-      const directionX = random() < 0.5 ? -1 : 1;
-      const directionY = random() < 0.5 ? -1 : 1;
+      const maxRadius = Math.min(width, height) / 2;
+      const distanceFactor = Math.random() ** 2 * 0.5;
+      const radius = maxRadius * distanceFactor;
+      const angle = Math.random() * 360;
 
-      const distanceX = directionX === 1 ? width - x : x;
-      const distanceY = directionY === 1 ? height - y : y;
+      const posX = (x - width / 2) + radius * cos(angle);
+      const posY = (y - height / 2) + radius * sin(angle);
 
-      return [
-        (x - width / 2) + (distanceX * factor * directionX),
-        (y - height / 2) + (distanceY * factor * directionY)
-      ];
+      return [posX, posY];
     }
 
     let lastMovedFrame = 0;
