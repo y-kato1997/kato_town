@@ -132,7 +132,7 @@
       maxImageSize = height > width ? height / sizeFactor : width / sizeFactor;
     }
 
-    function createKatoElement(drawTemporary = false) {
+    function createKatoElement(isTemporary = false) {
       let posX = 0;
       let posY = 0;
 
@@ -159,15 +159,15 @@
         rotation: round(random(-140, 140)),
         count: 0,
         imageIndex: round(random(0, katoImages.length - 1)),
-        drawTemporary: drawTemporary
+        isTemporary: isTemporary
       };
     }
 
     function calculatePositionWithGravity(x, y) {
       const maxRadius = Math.min(width, height) / 2;
-      const distanceFactor = Math.random() ** 2 * 0.5;
+      const distanceFactor = random() ** 2 * 0.5;
       const radius = maxRadius * distanceFactor;
-      const angle = Math.random() * 360;
+      const angle = random() * 360;
 
       const posX = (x - width / 2) + radius * cos(angle);
       const posY = (y - height / 2) + radius * sin(angle);
