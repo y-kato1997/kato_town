@@ -30,7 +30,7 @@
 <body>
   <script src="./js/p5.js"></script>
   <script>
-    let katoImage;
+    let katoImages;
     let katoCount = 0;
     let katoElements = [];
     let maxImageSize = 0;
@@ -55,7 +55,11 @@
     }, { passive: false });
 
     function preload() {
-      katoImage = loadImage('./asset/kato.svg');
+      katoImages = [
+        loadImage('./asset/kato_jp.svg'),
+        loadImage('./asset/kato_en.svg'),
+        loadImage('./asset/kato_kor.svg')
+      ];
     }
 
     function setup() {
@@ -63,8 +67,10 @@
       angleMode(DEGREES);
       updateMaxImageSize();
 
-      //生成される文字の数(5~10個)
-      const maxElements = Math.floor(Math.random() * 5) + 5;
+      //生成される文字の数(10~15個)
+      const minElements = 10;
+      const maxElements = 15;
+      const elementCount = Math.floor(Math.random() * (maxElements - minElements + 1)) + minElements;
 
       for (let i = 0; i < maxElements; i++) {
         katoElements.push(createKatoElement());
@@ -81,7 +87,7 @@
 
         element.size += 0.5;
         element.rotation += 0.02;
-        element.opacity -= 1.5;
+        element.opacity -= 1;
         element.count++;
 
         imageMode(CENTER);
@@ -91,22 +97,27 @@
         rotateZ(element.rotation);
         tint(255, element.opacity);
 
-        const imageWidth = element.size;
-        const imageHeight = element.size * (katoImage.height / katoImage.width);
-        image(katoImage, 0, 0, imageWidth, imageHeight);
+        const imageAspectRatio = katoImages[element.imageIndex].height / katoImages[element.imageIndex].width;
+        let imageWidth, imageHeight;
+
+        if (imageAspectRatio > 1) {
+          imageHeight = element.size;
+          imageWidth = element.size / imageAspectRatio;
+        } else {
+          imageWidth = element.size;
+          imageHeight = element.size * imageAspectRatio;
+        }
+
+        image(katoImages[element.imageIndex], 0, 0, imageWidth, imageHeight);
+
+        image(katoImages[element.imageIndex], 0, 0, imageWidth, imageHeight);
 
         pop();
 
-        if (element.drawTemporary && element.opacity < 0) {
+        if (element.isTemporary && element.opacity < 0) {
           katoElements = katoElements.filter(e => e !== element);
-        }
-
-        if (element.opacity < 0) {
-          if (element.drawTemporary) {
-            katoElements = katoElements.filter(e => e !== element);
-          } else {
-            Object.assign(element, createKatoElement());
-          }
+        } else if (element.opacity < 0) {
+          Object.assign(element, createKatoElement());
         }
       }
     }
@@ -117,7 +128,7 @@
     }
 
     function updateMaxImageSize() {
-      const sizeFactor = 6;
+      const sizeFactor = 15;
       maxImageSize = height > width ? height / sizeFactor : width / sizeFactor;
     }
 
@@ -130,8 +141,8 @@
           [posX, posY] = calculatePositionWithGravity(mouseX, mouseY);
           break;
         case isTouchActive:
-          let fingerNum = round(random(0, touches.length - 1));
-          [posX, posY] = calculatePositionWithGravity(touches[fingerNum].x, touches[fingerNum].y);
+          let fingerNo = round(random(0, touches.length - 1));
+          [posX, posY] = calculatePositionWithGravity(touches[fingerNo].x, touches[fingerNo].y);
           break;
         default:
           posX = round(random(-width / 2, width / 2));
@@ -147,6 +158,7 @@
         opacity: round(random(50, 255)),
         rotation: round(random(-140, 140)),
         count: 0,
+        imageIndex: round(random(0, katoImages.length - 1)),
         drawTemporary: drawTemporary
       };
     }
@@ -166,7 +178,7 @@
     }
 
     let lastMovedFrame = 0;
-    let frameInterval = 10;
+    let frameInterval = 5;
     function mouseMoved() {
       if (frameCount - lastMovedFrame > frameInterval) {
         katoElements.push(createKatoElement(true));
