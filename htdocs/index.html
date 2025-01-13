@@ -204,11 +204,9 @@
     }
 
     function touchEnded() {
-      isTouchActive = false;
-    }
-
-    function mouseWheel(event) {
-      katoElements.push(createKatoElement(true));
+      if (touches.length === 0) {
+        isTouchActive = false;
+      }
     }
   </script>
 </body>
