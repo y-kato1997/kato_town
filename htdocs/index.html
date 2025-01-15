@@ -31,29 +31,13 @@
 <body>
   <script src="./js/p5.js"></script>
   <script>
-    let katoImages;
-    let katoCount = 0;
-    let katoElements = [];
-    let maxImageSize = 0;
+    let katoImages, katoCount = 0, katoElements = [], maxImageSize = 0;
+    let isMouseHovering = false, isTouchActive = false;
 
-    let isMouseHovering = false;
-    let isTouchActive = false;
-
-    document.body.addEventListener("mouseenter", () => {
-      isMouseHovering = true;
-    }, false);
-
-    document.body.addEventListener("mouseleave", () => {
-      isMouseHovering = false;
-    }, false);
-
-    document.body.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-    }, { passive: false });
-
-    document.body.addEventListener("touchmove", (e) => {
-      e.preventDefault();
-    }, { passive: false });
+    document.body.addEventListener("mouseenter", () => isMouseHovering = true, false);
+    document.body.addEventListener("mouseleave", () => isMouseHovering = false, false);
+    document.body.addEventListener("touchstart", e => e.preventDefault(), { passive: false });
+    document.body.addEventListener("touchmove", e => e.preventDefault(), { passive: false });
 
     function preload() {
       katoImages = [
@@ -73,15 +57,15 @@
       const maxElements = 20;
       const elementCount = Math.floor(Math.random() * (maxElements - minElements + 1)) + minElements;
 
-      for (let i = 0; i < maxElements; i++) {
+      for (let i = 0; i < elementCount; i++) {
         katoElements.push(createKatoElement());
       }
     }
 
     function draw() {
-      background(17, 17, 17);
+      background(17);
 
-      for (const element of katoElements) {
+      katoElements.forEach((element, index) => {
         if (element.count === 0) {
           katoCount++;
         }
@@ -91,36 +75,26 @@
         element.opacity -= 1;
         element.count++;
 
-        imageMode(CENTER);
         push();
-
         translate(element.x, element.y, element.z);
         rotateZ(element.rotation);
         tint(255, element.opacity);
 
-        const imageAspectRatio = katoImages[element.imageIndex].height / katoImages[element.imageIndex].width;
-        let imageWidth, imageHeight;
+        const img = katoImages[element.imageIndex];
+        const aspectRatio = img.height / img.width;
+        const [w, h] = aspectRatio > 1
+          ? [element.size / aspectRatio, element.size]
+          : [element.size, element.size * aspectRatio];
 
-        if (imageAspectRatio > 1) {
-          imageHeight = element.size;
-          imageWidth = element.size / imageAspectRatio;
-        } else {
-          imageWidth = element.size;
-          imageHeight = element.size * imageAspectRatio;
-        }
-
-        image(katoImages[element.imageIndex], 0, 0, imageWidth, imageHeight);
-
-        image(katoImages[element.imageIndex], 0, 0, imageWidth, imageHeight);
-
+        imageMode(CENTER);
+        image(img, 0, 0, w, h);
         pop();
 
-        if (element.isTemporary && element.opacity < 0) {
-          katoElements = katoElements.filter(e => e !== element);
-        } else if (element.opacity < 0) {
-          Object.assign(element, createKatoElement());
+        if (element.opacity < 0) {
+          katoElements[index] = element.isTemporary ? null : createKatoElement();
         }
-      }
+      });
+      katoElements = katoElements.filter(Boolean);
     }
 
     function windowResized() {
@@ -130,7 +104,7 @@
 
     function updateMaxImageSize() {
       const sizeFactor = 10;
-      maxImageSize = height > width ? height / sizeFactor : width / sizeFactor;
+      maxImageSize = Math.min(width, height) / sizeFactor;
     }
 
     function createKatoElement(isTemporary = false) {
@@ -166,47 +140,24 @@
 
     function calculatePositionWithGravity(x, y) {
       const maxRadius = Math.min(width, height) / 2;
-      const distanceFactor = random() ** 2 * 0.5;
-      const radius = maxRadius * distanceFactor;
+      const radius = maxRadius * random() ** 2 * 0.5;
       const angle = random() * 360;
-
-      const posX = (x - width / 2) + radius * cos(angle);
-      const posY = (y - height / 2) + radius * sin(angle);
-
-      return [posX, posY];
+      return [(x - width / 2) + radius * cos(angle), (y - height / 2) + radius * sin(angle)];
     }
 
-    let lastMovedFrame = 0;
-    let frameInterval = 2;
-    function mouseMoved() {
+    let lastMovedFrame = 0, frameInterval = 2;
+    function handleInteraction() {
       if (frameCount - lastMovedFrame > frameInterval) {
         katoElements.push(createKatoElement(true));
         lastMovedFrame = frameCount;
       }
     }
+    mouseMoved = mousePressed = touchMoved = handleInteraction;
+    function touchStarted() { isTouchActive = true; }
+    function touchEnded() { if (!touches.length) isTouchActive = false; }
 
-    function mousePressed() {
-      if (frameCount - lastMovedFrame > frameInterval) {
-        katoElements.push(createKatoElement(true));
-        lastMovedFrame = frameCount;
-      }
-    }
-
-    function touchMoved() {
-      if (frameCount - lastMovedFrame > frameInterval) {
-        katoElements.push(createKatoElement(true));
-        lastMovedFrame = frameCount;
-      }
-    }
-
-    function touchStarted() {
-      isTouchActive = true;
-    }
-
-    function touchEnded() {
-      if (touches.length === 0) {
-        isTouchActive = false;
-      }
+    function mouseWheel(event) {
+      katoElements.push(createKatoElement(true));
     }
   </script>
 </body>
